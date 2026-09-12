@@ -1,0 +1,38 @@
+# Frontend dependencies and generated build output
+node_modules/
+dist/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python environments, caches, and local databases
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.sqlite3
+*.sqlite
+*.db
+
+# Local archives, database dumps/backups, and logs
+archive/
+backups/
+dumps/
+*.bak
+*.backup
+*.bacpac
+*.bkp
+*.dump
+*.sql
+*.log
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

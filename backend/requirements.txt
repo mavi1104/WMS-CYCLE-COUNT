@@ -1,0 +1,6 @@
+Django>=6.0,<6.1
+djangorestframework>=3.17,<3.18
+django-cors-headers>=4.9,<5.0
+mssql-django>=1.8,<1.9
+python-dotenv>=1.2,<2.0
+
