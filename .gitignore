@@ -1,6 +1,7 @@
 # Frontend dependencies and generated build output
 node_modules/
 dist/
+.vite/
 
 # Local environment and secrets
 .env

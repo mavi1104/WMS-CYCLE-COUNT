@@ -3,24 +3,34 @@
 Vue 3 + Vite mobile Counter UI with a Django REST Framework API connected to the
 existing Microsoft SQL Server WMS database.
 
+## Project structure
+
+```text
+wms-web-ui/
+|-- frontend/   # Vue 3, Vite, frontend tests, and build output
+|-- backend/    # Django REST API, migrations, and backend tests
+|-- archive/    # Unused historical/mock application
+`-- *.md        # Project-level documentation
+```
+
 ## Active source
 
-Run frontend commands from this project root (`C:\proj\wms-web-ui`).
-`src/` is the active Vue application and `backend/` is the Django API.
+Run frontend commands from `frontend/` (`C:\proj\wms-web-ui\frontend`).
+`frontend/src/` is the active Vue application and `backend/` is the Django API.
 The unused mock application and local demo account store are retained in
 [`archive/`](archive/README.md) and are not part of the active build.
 
 Counter session storage and API lock operations live in
-`src/services/counterSession.js`; `src/composables/useCounterLock.js` owns the
+`frontend/src/services/counterSession.js`; `frontend/src/composables/useCounterLock.js` owns the
 heartbeat lifecycle and release state. The selection page permits one list
 request at a time and stops processing refreshes after it unmounts.
 
 ## Refactor checks
 
-- `npm test` runs isolated frontend session, unlock, heartbeat, verification, and
+- From `frontend/`, `npm test` runs isolated frontend session, unlock, heartbeat, verification, and
   refresh lifecycle tests using Node's test runner and VM modules. Browser APIs
   and network responses are simulated; this is not a browser end-to-end test.
-- `npm run build` compiles the production frontend.
+- From `frontend/`, `npm run build` compiles the production frontend.
 - From `backend/`, run
   `python manage.py test cycle_counts --settings=wms_api.test_settings` for the
   existing backend regression tests against an isolated SQLite database.
@@ -45,7 +55,9 @@ are skipped, and selection refresh responses are ignored after unmount.
 - Searchable compact Product Name picker for phone/tablet warehouse counting
 
 ## Run
-```bash
+
+```powershell
+Set-Location .\frontend
 npm install
 npm run dev
 ```

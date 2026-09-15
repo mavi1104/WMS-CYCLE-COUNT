@@ -53,7 +53,7 @@ backend\.venv\Scripts\python.exe -m pip install --upgrade pip
 backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 backend\.venv\Scripts\python.exe -m pip install "waitress>=3.0,<4.0"
 
-npm ci
+npm --prefix frontend ci
 ```
 
 Waitress is the Windows production WSGI server. Do not use Django's
@@ -176,7 +176,7 @@ the one-time migration if DDL permission is required.
 
 ## 5. Build Vue
 
-Create `.env.production` in the project root:
+Create `frontend\.env.production`:
 
 ```dotenv
 VITE_API_BASE_URL=/api
@@ -185,14 +185,14 @@ VITE_API_BASE_URL=/api
 Build the frontend:
 
 ```powershell
-Set-Location C:\apps\wms-web-ui
+Set-Location C:\apps\wms-web-ui\frontend
 npm run build
 ```
 
 The IIS website's physical path should point to:
 
 ```text
-C:\apps\wms-web-ui\dist
+C:\apps\wms-web-ui\frontend\dist
 ```
 
 ## 6. Run Django with Waitress
@@ -231,11 +231,12 @@ Restrict file permissions so ordinary users cannot read it.
 
 ## 7. Configure IIS
 
-Create the IIS site, bind its HTTPS hostname, and point it to the `dist` folder.
+Create the IIS site, bind its HTTPS hostname, and point it to the `frontend\dist` folder.
 Enable ARR proxying at the server level.
 
-Save the following as `public\web.config`, then run `npm run build` again. Vite
-will copy it into `dist\web.config`, so it is preserved on later builds:
+Save the following as `frontend\public\web.config`, then run `npm run build`
+from `frontend\` again. Vite will copy it into `frontend\dist\web.config`, so it
+is preserved on later builds:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -314,8 +315,8 @@ Back up the database and current application folder, then:
 Set-Location C:\apps\wms-web-ui
 
 backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
-npm ci
-npm run build
+npm --prefix frontend ci
+npm --prefix frontend run build
 
 Set-Location backend
 .\.venv\Scripts\python.exe manage.py check

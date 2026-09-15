@@ -1,6 +1,6 @@
 <script setup>
 import { computed, provide } from 'vue'
-import { ChevronLeft, Clock3, UserCog, WifiOff } from 'lucide-vue-next'
+import { ChevronLeft, Clock3, ServerOff, UserCog, WifiOff } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
 import csIcon from '../assets/CS_ICO.ico'
 import { useCounterLock } from '../composables/useCounterLock.js'
@@ -81,12 +81,13 @@ const idleCountdown = computed(() => {
 
     <div v-if="isCounting && connectionLost" class="connection-backdrop" aria-hidden="true"></div>
     <aside v-if="isCounting && connectionLost" :class="['connection-banner', { expired: lockExpired }]" role="alert">
-      <WifiOff class="connection-icon" :size="36" aria-hidden="true" />
-      <strong>{{ lockExpired ? 'Cycle Count lock may have expired.' : deviceOffline ? 'Wi-Fi connection lost.' : 'WMS server is unavailable.' }}</strong>
-      <span v-if="deviceOffline && !lockExpired">Please reconnect to the warehouse Wi-Fi network. Your Cycle Count lock may expire in {{ lockCountdown }}.</span>
-      <span v-else-if="deviceOffline">Please reconnect to the warehouse Wi-Fi network before continuing.</span>
+      <WifiOff v-if="deviceOffline" class="connection-icon" :size="36" aria-hidden="true" />
+      <ServerOff v-else class="connection-icon" :size="36" aria-hidden="true" />
+      <strong>{{ deviceOffline ? 'No network connection.' : 'WMS server is unavailable.' }}</strong>
+      <span v-if="deviceOffline && !lockExpired">Please reconnect to the warehouse network. Your Cycle Count lock may expire in {{ lockCountdown }}.</span>
+      <span v-else-if="deviceOffline">Please reconnect to the warehouse network. Your Cycle Count lock may have expired.</span>
       <span v-else-if="!lockExpired">Contact the IT Department. Your Cycle Count lock may expire in {{ lockCountdown }}.</span>
-      <span v-else>Contact the IT Department before continuing.</span>
+      <span v-else>Contact the IT Department. Your Cycle Count lock may have expired.</span>
     </aside>
     <aside v-else-if="isCounting && connectionRestored" class="connection-banner restored" role="status">
       <strong>Connected.</strong><span>Your Cycle Count session is active.</span>

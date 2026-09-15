@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+# Local troubleshooting documentation
+BACKEND_TROUBLESHOOTING_TAGALOG.md

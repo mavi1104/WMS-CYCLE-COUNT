@@ -43,12 +43,16 @@ async function harness(api = {}) {
     addEventListener: (event, callback) => listeners.set(event, callback),
     removeEventListener: event => listeners.delete(event),
   }
+  const navigator = {
+    onLine: api.online ?? true,
+    sendBeacon: (...args) => api.beacon?.(...args) ?? false,
+  }
   const context = vm.createContext({
     sessionStorage, Blob, URLSearchParams, AbortController, CustomEvent,
     defineProps: () => api.props || {},
     defineEmits: () => (...args) => emitted.push(args),
     fetch: (...args) => api.fetch(...args),
-    navigator: { sendBeacon: (...args) => api.beacon?.(...args) ?? false },
+    navigator,
     window: {
       ...events, scrollTo() {},
       dispatchEvent: event => listeners.get(event.type)?.(event),
@@ -123,7 +127,7 @@ async function harness(api = {}) {
     scope.stop()
   }
 
-  return { open, storage, intervals, timeouts, listeners, mounted, unmount, navigations, apiCalls, scope, emitted }
+  return { open, storage, intervals, timeouts, listeners, mounted, unmount, navigations, apiCalls, scope, emitted, navigator }
 }
 
 // Verify compatibility with existing sessions and isolation from staff and other counter sessions.
@@ -274,6 +278,52 @@ test('activity report exposes separate raw metadata comparison columns', async (
   assert.match(source, /log\.lotNoChanged \? metadataValue\(log\.lotNoFrom\)/)
   assert.match(source, /log\.productionDateChanged \? metadataValue\(log\.productionDateFrom\)/)
   assert.match(source, /log\.expiryDateChanged \? metadataValue\(log\.expiryDateFrom\)/)
+})
+
+test('counting warning uses distinct network and WMS server states', async () => {
+  const source = await readFile(path.join(root, 'src/layouts/CounterLayout.vue'), 'utf8')
+  assert.match(source, /ServerOff/)
+  assert.match(source, /<WifiOff v-if="deviceOffline"/)
+  assert.match(source, /<ServerOff v-else/)
+  assert.match(source, /No network connection\./)
+  assert.match(source, /WMS server is unavailable\./)
+  assert.match(source, /Contact the IT Department\. Your Cycle Count lock may expire in/)
+})
+
+test('failed heartbeat classifies connectivity and only a successful retry restores WMS', async () => {
+  let serverAvailable = false
+  const h = await harness({
+    online: true,
+    post: async () => {
+      if (!serverAvailable) throw Error('WMS unavailable')
+      return { detail: 'Cycle Count lock active.' }
+    },
+  })
+  const session = await h.open('src/services/counterSession.js')
+  session.saveCounterSession(7, { token: 'token' })
+  const { useCounterLock } = await h.open('src/composables/useCounterLock.js')
+  const lock = h.scope.run(() => useCounterLock(ref(7), async () => {}))
+  const heartbeat = [...h.intervals.values()][0]
+
+  await heartbeat.callback()
+  assert.equal(lock.connectionLost.value, true)
+  assert.equal(lock.deviceOffline.value, false)
+
+  await h.listeners.get('online')()
+  assert.equal(lock.connectionLost.value, true)
+
+  h.navigator.onLine = false
+  await heartbeat.callback()
+  assert.equal(lock.connectionLost.value, true)
+  assert.equal(lock.deviceOffline.value, true)
+
+  h.navigator.onLine = true
+  serverAvailable = true
+  await heartbeat.callback()
+  assert.equal(lock.connectionLost.value, false)
+  assert.equal(lock.deviceOffline.value, false)
+  assert.equal(lock.connectionRestored.value, true)
+  h.unmount()
 })
 
 // Exercise interval ownership, overlap prevention, route changes, and late heartbeat failures.

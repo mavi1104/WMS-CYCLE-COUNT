@@ -458,7 +458,7 @@ onBeforeUnmount(() => {
           <span id="completion-title" class="completion-copy">
             <template v-if="completedOnOpen">
               All products have already been counted.
-              <strong>This Cycle Count is awaiting manager posting. You can still review or correct the saved counts.</strong>
+              <strong>Awaiting posting by the Warehouse Manager. You can still review or correct the saved counts.</strong>
             </template>
             <template v-else>
               You have finished counting all products in this Cycle Count.
